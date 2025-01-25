@@ -1,14 +1,7 @@
 from game.station import Station
+from interface.command_parser import Parser
 
 station = Station()
+parser = Parser()
 
-status = station.get_status()
-while True:
-
-    station.update_system("oxygen", -90)
-
-    print(station.get_status())
-
-    if station.is_game_over():
-        print("You lose!")
-        break
+print(parser.status())
