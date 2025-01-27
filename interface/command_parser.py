@@ -12,6 +12,7 @@ class Parser:
             "QUIT": self.quit,
             "MENU": self.menu,
             "EXIT": self.quit,
+            "RESOURCES": self.resources,
         }
 
     def parse_command(self, user_input: str):
@@ -31,6 +32,14 @@ class Parser:
         print("\n=== STATION STATUS ===")
         for metric, value in station_status.items():
             print(f"{metric.title()}: {value}%")
+        print("===================")
+
+    def resources(self):
+        station_resources = self.station.get_resources()
+        clear_screen()
+        print("\n=== RESOURCES ===")
+        for metric, value in station_resources.items():
+            print(f"{metric.title()}: {value}")
         print("===================")
 
     def quit(self):
