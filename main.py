@@ -1,7 +1,10 @@
-from game.station import Station
 from interface.command_parser import Parser
 
-station = Station()
-parser = Parser()
 
-print(parser.status())
+def main():
+    parser = Parser()
+    parser.menu()
+
+
+if __name__ == "__main__":
+    main()

@@ -5,15 +5,19 @@ class Station:
         self._hull_integrity = 100
         self._crew_morale = 100
 
+    @property
     def oxygen(self):
         return self._oxygen
 
+    @property
     def power(self):
         return self._power
 
+    @property
     def hull_integrity(self):
         return self._hull_integrity
 
+    @property
     def crew_morale(self):
         return self._crew_morale
 
@@ -35,6 +39,6 @@ class Station:
         return {
             "oxygen": self.oxygen,
             "power": self.power,
-            "hull_integrity": self.hull_integrity,
-            "crew_morale": self.crew_morale,
+            "hull integrity": self.hull_integrity,
+            "crew morale": self.crew_morale,
         }
