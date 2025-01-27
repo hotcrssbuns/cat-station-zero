@@ -8,7 +8,6 @@ class Parser:
         self.station = Station()
         self.commands = {
             "STATUS": self.status,
-            "HELP": self.help,
             "QUIT": self.quit,
             "MENU": self.menu,
             "EXIT": self.quit,
@@ -84,8 +83,7 @@ class Parser:
             print("> RESOURCES")
             print("> ASSIGN")
             print("> COMPLETE")
-            print("\n> HELP")
-            print("> EXIT")
+            print("\n> EXIT")
 
             choice = input("\n> ").upper().strip()
             self.parse_command(choice)
