@@ -1,5 +1,6 @@
 from game.station import Station
 from utils.helpers import clear_screen
+
 import sys
 
 
@@ -13,6 +14,7 @@ class Parser:
             "EXIT": self.quit,
             "TASKS": self.tasks,
             "RESOURCES": self.resources,
+            "ASSIGN": self.assign,
         }
 
     def parse_command(self, user_input: str):
@@ -99,3 +101,29 @@ class Parser:
             for i, task in enumerate(tasks, 1):
                 print(f"{i}. {task}")
         print("===================\n")
+
+    def assign(self):
+        clear_screen()
+        tasks = self.station.task_manager.active_tasks
+        for i, task in enumerate(tasks):
+            print(f"{i+1}. {task}")
+            for resource_name, amount in task.required_resources.items():
+                print(
+                    f"    Required Resources: {resource_name.replace('_', ' ').title()}: {amount}"
+                )
+        # show user active tasks with numbers for selection (with resources needed)
+        # if no active tasks, show message and return to interface
+
+        # user selects tasks they want to assign resources to
+        # validate user input as valid task number
+        # convert input to task selection
+
+        # get task id from active task
+        # get task required resources for task id
+
+        # check if user has resources needed
+        # if yes
+        # subtract resources from player
+        # assign resource to task
+        # show success
+        # if no, show message
