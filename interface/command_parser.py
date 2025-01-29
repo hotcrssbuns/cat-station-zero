@@ -132,12 +132,22 @@ class Parser:
                 current_amount = getattr(self.station, f"_{resource}")
                 print(f"{resource_name}: {amount} (You have: {current_amount})")
 
-        # get task id from active task
-        # get task required resources for task id
-
-        # check if user has resources needed
-        # if yes
-        # subtract resources from player
-        # assign resource to task
-        # show success
-        # if no, show message
+            can_afford = True
+            missing_resources = []
+            for resource, amount in selected_task.required_resources.items():
+                current_amount = getattr(self.station, f"_{resource}")
+                if current_amount < amount:
+                    can_afford = False
+                    missing_resources.append(f"{resource.replace('_', ' ').title()}")
+            if can_afford:
+                confirm = input("\nAssign resources? (y/n): ").lower()
+                if confirm == "y":
+                    for resource, amount in selected_task.required_resources.items():
+                        current = getattr(self.station, f"_{resource}")
+                        setattr(self.station, f"_{resource}", current - amount)
+                    print("\nResources assigned succesfully!")
+                else:
+                    print("\nResource assignment cancelled.")
+            else:
+                print("\nInsufficient resources!")
+                print(f"Missing: {', '.join(missing_resources)}")
