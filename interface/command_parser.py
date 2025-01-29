@@ -11,6 +11,7 @@ class Parser:
             "QUIT": self.quit,
             "MENU": self.menu,
             "EXIT": self.quit,
+            "TASKS": self.tasks,
             "RESOURCES": self.resources,
         }
 
@@ -87,3 +88,14 @@ class Parser:
 
             choice = input("\n> ").upper().strip()
             self.parse_command(choice)
+
+    def tasks(self):
+        clear_screen()
+        print("\n=== ACTIVE TASKS ===")
+        tasks = self.station.get_tasks()
+        if not tasks:
+            print("No active tasks.")
+        else:
+            for i, task in enumerate(tasks, 1):
+                print(f"{i}. {task}")
+        print("===================\n")

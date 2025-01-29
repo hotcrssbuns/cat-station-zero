@@ -1,3 +1,6 @@
+from game.tasks import TaskManager
+
+
 class Station:
     def __init__(self):
         self._oxygen = 100
@@ -8,6 +11,7 @@ class Station:
         self._power_cells = 5
         self._medical_supplies = 5
         self._crew_members = 5
+        self.task_manager = TaskManager()
 
     @property
     def oxygen(self):
@@ -70,3 +74,9 @@ class Station:
             "medical supplies": self.medical_supplies,
             "crew members": self.crew_members,
         }
+
+    def get_tasks(self):
+        return self.task_manager.get_active_tasks()
+
+    def add_random_task(self):
+        self.task_manager.create_task("repair_oxygen")

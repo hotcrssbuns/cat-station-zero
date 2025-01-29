@@ -55,3 +55,18 @@ class TaskManager:
                 "failure_effects": {"power": -5},
             },
         }
+
+    def create_task(self, task_id) -> Task:
+        if task_id in self.task_templates:
+            template = self.task_templates[task_id]
+            new_task = Task(**template)
+            self.active_tasks.append(new_task)
+            return new_task
+        raise ValueError(f"Unknown task ID: {task_id}")
+
+    def get_active_tasks(self) -> List[Task]:
+        return self.active_tasks
+
+    def remove_task(self, task: Task):
+        if task in self.active_tasks:
+            self.active_tasks.remove(task)
