@@ -79,4 +79,4 @@ class Station:
         return self.task_manager.get_active_tasks()
 
     def add_random_task(self):
-        self.task_manager.create_task("repair_oxygen")
+        self.task_manager.create_task()

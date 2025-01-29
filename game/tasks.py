@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Dict, List
+import random
 
 
 class Priority(Enum):
@@ -56,13 +57,13 @@ class TaskManager:
             },
         }
 
-    def create_task(self, task_id) -> Task:
-        if task_id in self.task_templates:
-            template = self.task_templates[task_id]
-            new_task = Task(**template)
-            self.active_tasks.append(new_task)
-            return new_task
-        raise ValueError(f"Unknown task ID: {task_id}")
+    def create_task(self) -> Task:
+        available_tasks = list(self.task_templates.keys())
+        task_id = random.choice(available_tasks)
+        template = self.task_templates[task_id]
+        new_task = Task(**template)
+        self.active_tasks.append(new_task)
+        return new_task
 
     def get_active_tasks(self) -> List[Task]:
         return self.active_tasks
