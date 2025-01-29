@@ -105,18 +105,32 @@ class Parser:
     def assign(self):
         clear_screen()
         tasks = self.station.task_manager.active_tasks
-        for i, task in enumerate(tasks):
-            print(f"{i+1}. {task}")
-            for resource_name, amount in task.required_resources.items():
-                print(
-                    f"    Required Resources: {resource_name.replace('_', ' ').title()}: {amount}"
-                )
-        # show user active tasks with numbers for selection (with resources needed)
-        # if no active tasks, show message and return to interface
+        if tasks:
+            for i, task in enumerate(tasks):
+                print(f"{i+1}. {task}")
+                for resource_name, amount in task.required_resources.items():
+                    print(
+                        f"    Required Resources: {resource_name.replace('_', ' ').title()}: {amount}"
+                    )
+        else:
+            print("No tasks currently available")
 
-        # user selects tasks they want to assign resources to
-        # validate user input as valid task number
-        # convert input to task selection
+        selection = input("> ").strip().upper()
+
+        if selection == "EXIT":
+            return
+
+        task_num = int(selection) - 1
+
+        if 0 <= task_num < len(tasks):
+            selected_task = tasks[task_num]
+            clear_screen()
+            print(f"\n Selected Task: {selected_task}")
+            print("\n Required Resources: ")
+            for resource, amount in selected_task.required_resources.items():
+                resource_name = resource.replace("_", " ").title()
+                current_amount = getattr(self.station, f"_{resource}")
+                print(f"{resource_name}: {amount} (You have: {current_amount})")
 
         # get task id from active task
         # get task required resources for task id
