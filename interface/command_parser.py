@@ -15,6 +15,7 @@ class Parser:
             "TASKS": self.tasks,
             "RESOURCES": self.resources,
             "ASSIGN": self.assign,
+            "COMPLETE": self.complete,
         }
 
     def parse_command(self, user_input: str):
@@ -151,3 +152,76 @@ class Parser:
             else:
                 print("\nInsufficient resources!")
                 print(f"Missing: {', '.join(missing_resources)}")
+
+    def complete(self):
+        clear_screen()
+        tasks = self.station.task_manager.active_tasks
+
+        if tasks:
+            # Display all active tasks with their details
+            for i, task in enumerate(tasks):
+                print(f"{i+1}. {task}")
+                for resource_name, amount in task.required_resources.items():
+                    print(
+                        f"    Required Resources: {resource_name.replace('_', ' ').title()}: {amount}"
+                    )
+
+            while True:
+                try:
+                    selection = input(
+                        "\nSelect task to complete (or 'back' to return): "
+                    )
+
+                    if selection.lower() == "back":
+                        return
+
+                    # Convert selection to task index
+                    task_num = int(selection) - 1
+
+                    if 0 <= task_num < len(tasks):
+                        selected_task = tasks[task_num]
+
+                        # Show selected task details
+                        clear_screen()
+                        print(f"\nSelected Task: {selected_task}")
+
+                        # Here we would check if task can be completed
+                        # For now, we'll just simulate success
+                        # You can add more complex success conditions later
+                        success = True
+
+                        if success:
+                            # Apply success effects to station
+                            for system, change in selected_task.success_effects.items():
+                                self.station.update_system(system, change)
+                                print(
+                                    f"\n{system.title()} {'increased' if change > 0 else 'decreased'} by {abs(change)}"
+                                )
+
+                            # Remove task from active tasks
+                            self.station.task_manager.remove_task(selected_task)
+                            print("\nTask completed successfully!")
+                        else:
+                            # Apply failure effects
+                            for system, change in selected_task.failure_effects.items():
+                                self.station.update_system(system, change)
+                                print(
+                                    f"\n{system.title()} {'increased' if change > 0 else 'decreased'} by {abs(change)}"
+                                )
+
+                            # Remove failed task
+                            self.station.task_manager.remove_task(selected_task)
+                            print("\nTask failed!")
+
+                        break
+                    else:
+                        print("\nInvalid task number. Please try again.")
+
+                except ValueError:
+                    print("\nPlease enter a valid number.")
+
+            input("\nPress Enter to continue...")
+
+        else:
+            print("No tasks currently available")
+            input("\nPress Enter to continue...")
