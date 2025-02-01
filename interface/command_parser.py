@@ -30,8 +30,6 @@ class Parser:
             clear_screen()
             print(f"Unknown command: '{command}'. Type HELP for available commands.")
 
-        input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
-
     def status(self):
         station_status = self.station.get_status()
         clear_screen()
@@ -39,6 +37,7 @@ class Parser:
         for metric, value in station_status.items():
             print(f"{metric.title()}: {value}%")
         print("===================")
+        input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
 
     def resources(self):
         station_resources = self.station.get_resources()
@@ -51,6 +50,7 @@ class Parser:
             else:
                 print(f"{metric.title()}: {value}")
         print("===================")
+        input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
 
     def quit(self):
         clear_screen()
@@ -109,7 +109,9 @@ class Parser:
         else:
             for i, task in enumerate(tasks, 1):
                 print(f"{i}. {task}")
+                print(f"       Description: {task.description}")
         print("===================\n")
+        input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
 
     def assign(self):
         clear_screen()
@@ -123,6 +125,7 @@ class Parser:
                     )
         else:
             print("No tasks currently available")
+            input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
             return
 
         selection = input("> ").strip().upper()
@@ -130,43 +133,55 @@ class Parser:
         if selection == "EXIT":
             return
 
-        task_num = int(selection) - 1
+        try:
+            task_num = int(selection) - 1
 
-        if 0 <= task_num < len(tasks):
-            selected_task = tasks[task_num]
-            clear_screen()
-            print(f"\n Selected Task: {selected_task}")
-            print("\n Required Resources: ")
-            for resource, amount in selected_task.required_resources.items():
-                resource_name = resource.replace("_", " ").title()
-                current_amount = getattr(self.station, f"_{resource}")
-                print(f"{resource_name}: {amount} (You have: {current_amount})")
+            if 0 <= task_num < len(tasks):
+                selected_task = tasks[task_num]
+                clear_screen()
+                print(f"\n Selected Task: {selected_task}")
+                print("\n Required Resources: ")
+                for resource, amount in selected_task.required_resources.items():
+                    resource_name = resource.replace("_", " ").title()
+                    current_amount = getattr(self.station, f"_{resource}")
+                    print(f"{resource_name}: {amount} (You have: {current_amount})")
 
-            can_afford = True
-            missing_resources = []
-            for resource, amount in selected_task.required_resources.items():
-                current_amount = getattr(self.station, f"_{resource}")
-                if current_amount < amount:
-                    can_afford = False
-                    missing_resources.append(f"{resource.replace('_', ' ').title()}")
-            if can_afford:
-                confirm = input("\nAssign resources? (y/n): ").lower()
-                if confirm == "y":
-                    for resource, amount in selected_task.required_resources.items():
-                        current = getattr(self.station, f"_{resource}")
-                        setattr(self.station, f"_{resource}", current - amount)
-                    for resource, amount in selected_task.required_resources.items():
-                        current = getattr(self.station, f"_{resource}")
-                        setattr(self.station, f"_{resource}", current - amount)
-                    selected_task.resources_assigned = (
-                        True  # Mark resources as assigned)
-                    )
-                    print("\nResources assigned succesfully!")
+                can_afford = True
+                missing_resources = []
+                for resource, amount in selected_task.required_resources.items():
+                    current_amount = getattr(self.station, f"_{resource}")
+                    if current_amount < amount:
+                        can_afford = False
+                        missing_resources.append(
+                            f"{resource.replace('_', ' ').title()}"
+                        )
+                if can_afford:
+                    confirm = input("\nAssign resources? (y/n): ").lower()
+                    if confirm == "y":
+                        for (
+                            resource,
+                            amount,
+                        ) in selected_task.required_resources.items():
+                            current = getattr(self.station, f"_{resource}")
+                            setattr(self.station, f"_{resource}", current - amount)
+                        selected_task.resources_assigned = (
+                            True  # Mark resources as assigned
+                        )
+                        print("\nResources assigned succesfully!")
+                        input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
+                    else:
+                        print("\nResource assignment cancelled.")
+                        input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
                 else:
-                    print("\nResource assignment cancelled.")
+                    print("\nInsufficient resources!")
+                    print(f"Missing: {', '.join(missing_resources)}")
+                    input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
             else:
-                print("\nInsufficient resources!")
-                print(f"Missing: {', '.join(missing_resources)}")
+                print(f"\nPlease enter a number between 1 and {len(tasks)}")
+                input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
+        except ValueError:
+            print("\nPlease enter a valid task number")
+            input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
 
     def complete(self):
         clear_screen()
@@ -200,9 +215,6 @@ class Parser:
                         clear_screen()
                         print(f"\nSelected Task: {selected_task}")
 
-                        # Here we would check if task can be completed
-                        # For now, we'll just simulate success
-                        # You can add more complex success conditions later
                         if not selected_task.resources_assigned:
                             print(
                                 "\nCannot complete task - Resources have not been assigned yet!"
@@ -251,11 +263,11 @@ class Parser:
                 except ValueError:
                     print("\nPlease enter a valid number.")
 
-            input("\nPress Enter to continue...")
+            input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
 
         else:
             print("No tasks currently available")
-            input("\nPress Enter to continue...")
+            input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
 
     def next_turn(self):
         # First, handle random chance for new task generation
@@ -268,15 +280,19 @@ class Parser:
             if resource_chance == 1:
                 self.station.update_system("spare_parts", 5)
                 print("Delivery! You got 5 Spare Parts!")
+                input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
             elif resource_chance == 2:
                 self.station.update_system("power_cells", 5)
                 print("Delivery! You got 5 Power Cells!")
+                input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
             elif resource_chance == 3:
                 self.station.update_system("medical_supplies", 5)
                 print("Delivery! You got 5 Medical Supplies!")
+                input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
             elif resource_chance == 4:
                 self.station.update_system("crew_members", 5)
                 print("Delivery! You got 1 Crew Members!")
+                input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
 
         if chance < 0.5:  # 50% chance each turn
             self.station.add_random_task()
@@ -303,6 +319,7 @@ class Parser:
                     )
                 tasks_to_remove.append(task)
                 print(f"\nTask failed: {task.name} - Ran out of time!")
+                input("\nPRESS ANY KEY TO RETURN TO COMMAND INTERFACE")
 
         # Remove expired tasks
         for task in tasks_to_remove:
