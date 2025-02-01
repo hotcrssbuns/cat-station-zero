@@ -1,5 +1,7 @@
 from game.station import Station
 from utils.helpers import clear_screen
+from game.tasks import TaskManager, Task, Priority
+import random
 
 import sys
 
@@ -16,6 +18,7 @@ class Parser:
             "RESOURCES": self.resources,
             "ASSIGN": self.assign,
             "COMPLETE": self.complete,
+            "NEXT TURN": self.next_turn,
         }
 
     def parse_command(self, user_input: str):
@@ -42,7 +45,11 @@ class Parser:
         clear_screen()
         print("\n=== RESOURCES ===")
         for metric, value in station_resources.items():
-            print(f"{metric.title()}: {value}")
+            if metric == "crew members":
+                cat_faces = "^•ﻌ•^ " * value
+                print(f"{metric.title()}: {cat_faces}")
+            else:
+                print(f"{metric.title()}: {value}")
         print("===================")
 
     def quit(self):
@@ -87,6 +94,7 @@ class Parser:
             print("> RESOURCES")
             print("> ASSIGN")
             print("> COMPLETE")
+            print("> NEXT TURN")
             print("\n> EXIT")
 
             choice = input("\n> ").upper().strip()
@@ -115,6 +123,7 @@ class Parser:
                     )
         else:
             print("No tasks currently available")
+            return
 
         selection = input("> ").strip().upper()
 
@@ -146,6 +155,12 @@ class Parser:
                     for resource, amount in selected_task.required_resources.items():
                         current = getattr(self.station, f"_{resource}")
                         setattr(self.station, f"_{resource}", current - amount)
+                    for resource, amount in selected_task.required_resources.items():
+                        current = getattr(self.station, f"_{resource}")
+                        setattr(self.station, f"_{resource}", current - amount)
+                    selected_task.resources_assigned = (
+                        True  # Mark resources as assigned)
+                    )
                     print("\nResources assigned succesfully!")
                 else:
                     print("\nResource assignment cancelled.")
@@ -188,7 +203,23 @@ class Parser:
                         # Here we would check if task can be completed
                         # For now, we'll just simulate success
                         # You can add more complex success conditions later
-                        success = True
+                        if not selected_task.resources_assigned:
+                            print(
+                                "\nCannot complete task - Resources have not been assigned yet!"
+                            )
+                            print(
+                                "Use the ASSIGN command first to allocate necessary resources."
+                            )
+                            break
+
+                        # If resources were assigned, continue with success chance calculation
+                        base_chance = 0.8  # 80% base chance of success
+                        if selected_task.priority == Priority.CRITICAL:
+                            base_chance = 0.4  # Critical tasks are harder
+                        elif selected_task.priority == Priority.URGENT:
+                            base_chance = 0.6  # Urgent tasks are moderate
+
+                        success = random.random() < base_chance
 
                         if success:
                             # Apply success effects to station
@@ -224,4 +255,67 @@ class Parser:
 
         else:
             print("No tasks currently available")
+            input("\nPress Enter to continue...")
+
+    def next_turn(self):
+        # First, handle random chance for new task generation
+        chance = random.random()
+        resource_chance = random.randrange(1, 5)
+        self.station.turns_until_resources -= 1
+
+        if self.station.turns_until_resources <= 0:
+            self.station.turns_until_resources = 5
+            if resource_chance == 1:
+                self.station.update_system("spare_parts", 5)
+                print("Delivery! You got 5 Spare Parts!")
+            elif resource_chance == 2:
+                self.station.update_system("power_cells", 5)
+                print("Delivery! You got 5 Power Cells!")
+            elif resource_chance == 3:
+                self.station.update_system("medical_supplies", 5)
+                print("Delivery! You got 5 Medical Supplies!")
+            elif resource_chance == 4:
+                self.station.update_system("crew_members", 5)
+                print("Delivery! You got 1 Crew Members!")
+
+        if chance < 0.5:  # 50% chance each turn
+            self.station.add_random_task()
+
+        # Update all station systems with small degradation
+        self.station.update_system("oxygen", -5)
+        self.station.update_system("power", -5)
+        self.station.update_system("hull_integrity", -5)
+        self.station.update_system("crew_morale", -5)
+
+        # Get the current list of tasks
+        tasks = self.station.task_manager.active_tasks
+        tasks_to_remove = []  # Keep track of expired tasks
+
+        # Update each task's remaining turns
+        for task in tasks:
+            task.turns_remaining -= 1
+            if task.turns_remaining <= 0:
+                # If task expires, apply failure effects
+                for system, change in task.failure_effects.items():
+                    self.station.update_system(system, change)
+                    print(
+                        f"\n{system.title()} {'increased' if change > 0 else 'decreased'} by {abs(change)}"
+                    )
+                tasks_to_remove.append(task)
+                print(f"\nTask failed: {task.name} - Ran out of time!")
+
+        # Remove expired tasks
+        for task in tasks_to_remove:
+            self.station.task_manager.remove_task(task)
+
+        # Check if game is over
+        if self.station.is_game_over():
+            clear_screen()
+            print("\nGAME OVER")
+            print("\nStation systems critical. All crew evacuated.")
+            input("\nPress Enter to quit...")
+            sys.exit()
+
+        # Show turn summary if any tasks expired
+        if tasks_to_remove:
             input("\nPress Enter to continue...")

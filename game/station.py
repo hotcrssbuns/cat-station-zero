@@ -10,8 +10,9 @@ class Station:
         self._spare_parts = 5
         self._power_cells = 5
         self._medical_supplies = 5
-        self._crew_members = 5
+        self._crew_members = 3
         self.task_manager = TaskManager()
+        self.turns_until_resources = 5
 
     @property
     def oxygen(self):

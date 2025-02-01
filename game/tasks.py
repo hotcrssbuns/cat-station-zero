@@ -28,6 +28,7 @@ class Task:
         self.success_effects = success_effects
         self.failure_effects = failure_effects
         self.turns_remaining = turns_to_complete
+        self.resources_assigned = False
 
     def __str__(self):
         return f"{self.priority.value}: {self.name} ({self.turns_remaining} turns left)"
